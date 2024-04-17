@@ -24,16 +24,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Mirror PR
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: ${{ github.event.pull_request.title }}
-          title: ${{ github.event.pull_request.title }}
-          body: |
-            > Merge this PR when the change passes testing.
-
-            ${{ github.event.pull_request.body }}
-          base: main
-          branch: ${{ github.event.pull_request.head.ref }}
-          labels: "staging"
-          delete-branch: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create --base main --head ${{ github.event.pull_request.head.ref }} \
+          --title "> Merge this PR when the change passes testing.\n\n${{ github.event.pull_request.title }}" \
+          --body ${{ github.event.pull_request.body }} \
+          --label "staging"
