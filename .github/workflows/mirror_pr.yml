@@ -29,9 +29,11 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: ${{ github.event.pull_request.title }}
           title: ${{ github.event.pull_request.title }}
-          body: ${{ github.event.pull_request.body }}
+          body: |
+            > Merge this PR when the change passes testing.
+
+            ${{ github.event.pull_request.body }}
           base: main
           branch: ${{ github.event.pull_request.head.ref }}
           labels: "staging"
-          author: ${{ github.event.pull_request.user.login }} <${{ github.event.pull_request.user.email }}>
           delete-branch: true
