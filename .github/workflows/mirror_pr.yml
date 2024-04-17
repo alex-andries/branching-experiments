@@ -33,5 +33,5 @@ jobs:
           base: main
           branch: ${{ github.event.pull_request.head.ref }}
           labels: "staging"
-          author: ${{ github.event.pull_request.user.login }}
+          author: ${{ github.event.pull_request.user.login }} <${{ github.event.pull_request.user.email }}>
           delete-branch: true
