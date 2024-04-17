@@ -24,6 +24,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr create --base main --head ${{ github.event.pull_request.head.ref }} \
-          --title ${{ github.event.pull_request.title }} \
-          --body ${{ github.event.pull_request.body }} \
+          --title "${{ github.event.pull_request.title }}" \
+          --body "$(echo -e "> Merge this PR when the change passes testing.\n\n${{ github.event.pull_request.body }}")"" \
           --label "staging"
