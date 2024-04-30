@@ -1,5 +1,15 @@
 # branching-experiments
 
+## 1.1.0
+
+### Minor Changes
+
+- 14ed18d: buggy feature
+
+### Patch Changes
+
+- 936e347: important fix
+
 ## 1.0.1
 
 ### Patch Changes
