@@ -1,0 +1,39 @@
+name: Hotfix Prod Versioning
+
+# This workflow bumps the version number using changesets whenever
+# a commit is added to the changeset-release/ branch. This facilitates with
+# including hotfixes when cherry-picking commits in the release branch.
+
+on:
+  push:
+    branches:
+      - changeset-release/*
+    paths:
+      - ".changeset/**"
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs:
+  bump-version:
+    name: Bump version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+      - name: Install dev dependencies
+        run: pnpm install --frozen-lockfile --dev
+      - name: Bump version if needed (for hotfixes) and commit changes
+        run: |
+          pnpm release:version
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git commit -am "chore: bump version"
+          git push
