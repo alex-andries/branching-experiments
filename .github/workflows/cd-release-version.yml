@@ -27,6 +27,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+      - name: Install dev dependencies
+        run: pnpm install --frozen-lockfile --dev
+      - name: Bump version if needed (for hotfixes) and commit changes
+        run: |
+          pnpm release:version
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git commit -am "chore: bump version"
+          git push
       - name: Fetch Version
         id: get
         run: |
@@ -37,23 +52,12 @@ jobs:
         run: |
           git fetch
           git checkout main
-          git tag RC-${{ env.RELEASE_VERSION }}
+          git tag v${{ env.RELEASE_VERSION }}
           git push origin --tags
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "RC-${{ env.RELEASE_VERSION }}"
-      - name: Sync development branch back to main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git fetch
-          git checkout main
-          git pull origin main
-          git checkout development
-          git pull origin development
-          git merge main
-          git push origin development
+          tag_name: "v${{ env.RELEASE_VERSION }}"
 
   prod-cd:
     name: PROD
@@ -61,5 +65,7 @@ jobs:
     needs: fetch-version
     if: ${{ (github.event.pull_request.merged == true) && (startsWith(github.head_ref, 'changeset-release/')) }}
     steps:
-      - name: Simulates CD to Prod
-        run: echo "Simulated release of version ${{ needs.fetch-version.outputs.RELEASE_VERSION }} to production"
+      - name: Simulate CD
+        run: |
+          echo "Starting deployment to production..."
+          echo "Deploying version $RELEASE_VERSION to production..."
