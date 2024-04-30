@@ -1,5 +1,11 @@
 # branching-experiments
 
+## 1.1.1
+
+### Patch Changes
+
+- ee92598: bug fix 2
+
 ## 1.1.0
 
 ### Minor Changes
