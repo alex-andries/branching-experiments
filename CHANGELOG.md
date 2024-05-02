@@ -1,5 +1,11 @@
 # branching-experiments
 
+## 1.2.1
+
+### Patch Changes
+
+- 801db9f: fix serious bug
+
 ## 1.2.0
 
 ### Minor Changes
