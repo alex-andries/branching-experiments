@@ -1,5 +1,11 @@
 # branching-experiments
 
+## 1.1.2
+
+### Patch Changes
+
+- ca50995: some hotfix
+
 ## 1.1.1
 
 ### Patch Changes
