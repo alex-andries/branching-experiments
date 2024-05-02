@@ -8,8 +8,6 @@ name: RELEASE PROD VERSION
 
 on:
   pull_request:
-    branches:
-      - main
     types:
       - closed
 
