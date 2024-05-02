@@ -1,5 +1,18 @@
 # branching-experiments
 
+## 1.2.0
+
+### Minor Changes
+
+- 37b5d69: feature 6
+- da67633: SERIOUS BUG
+
+### Patch Changes
+
+- aea3c59: Hotfix test
+- 4ffa774: some hotfix
+- ebb2496: bug fix 2
+
 ## 1.1.1
 
 ### Patch Changes
