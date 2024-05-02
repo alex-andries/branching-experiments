@@ -17,3 +17,5 @@ test feature 1 test#4 -- pushing again to the same branch that has PR opened to 
 buggy feature 5
 
 feature 6
+
+SERIOUS BUG
