@@ -54,3 +54,8 @@ jobs:
         run: |
           echo "Starting deployment to production..."
           echo "Deploying version $RELEASE_VERSION to production..."
+          CONTENTS=""
+          for markdown in src/*.md; do
+            CONTENTS="$CONTENTS\n$(cat $markdown)"
+          done
+          echo -e $CONTENTS
