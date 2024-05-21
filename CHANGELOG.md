@@ -1,5 +1,12 @@
 # branching-experiments
 
+## 1.2.2
+
+### Patch Changes
+
+- ecdb60f: fix serious bug
+- afcc6d7: irrelevant feature
+
 ## 1.2.1
 
 ### Patch Changes
