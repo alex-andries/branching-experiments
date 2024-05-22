@@ -1,15 +1,10 @@
 name: RELEASE PROD VERSION
 
-# This workflow is designed to be run after the changesets PR has been closed and
-# merged. It should not run for any other PR closure, and should not run if the changesets
-# PR is closed and dismissed without merging. This workflow fetches the version number
-# in package.json and creates a tag using it on the PR head, then creates a release using that tag.
-# This release should then trigger `cd-prod.yml`
-
 on:
   pull_request:
     branches:
       - main
+      - release
     types:
       - closed
 
@@ -54,3 +49,21 @@ jobs:
         run: |
           echo "Starting deployment to production..."
           echo "Deploying version $RELEASE_VERSION to production..."
+      - name: Check if Hotfix
+        run: |
+          if [[ "${{ github.event.pull_request.base.ref }}" == "release" ]]; then
+            echo "::set-output name=hotfix::true"
+          else
+            echo "::set-output name=hotfix::false"
+          fi
+        id: check-hotfix
+      - name: Create PR from release to main
+        if: ${{ steps.check-hotfix.outputs.hotfix == 'true' }}
+        uses: peter-evans/create-pull-request@v3
+        with:
+          branch: main
+          title: "Hotfix: Merge release branch into main"
+          body: "This PR merges the hotfix from the release branch into the main branch."
+          commit-message: "Hotfix: Merge release branch into main"
+          labels: hotfix
+          delete-branch: false
