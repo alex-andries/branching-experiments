@@ -4,9 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       hotfix:
+        type: choice
         description: "Is this a hotfix release?"
         required: false
         default: "false"
+        options:
+          - true
+          - false
 
 permissions:
   pull-requests: write
