@@ -1,1 +1,12 @@
 Buggy feature 1
+
+## 1.2.0
+
+### Minor Changes
+
+- 2f123f5: Buggy feature
+- 37b5d69: feature 6
+
+### Patch Changes
+
+- ebb2496: bug fix 2
