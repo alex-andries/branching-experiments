@@ -1,11 +1,12 @@
 name: RELEASE-PROD
 
-# This workflow is manually triggered and will call changesets to collect up all
-# changes ready for release and open a PR for approval. The newly opened PR will
-# need to be closed and opened to trigger `cd-changesets-tests.yml`
-
 on:
   workflow_dispatch:
+    inputs:
+      hotfix:
+        description: "Is this a hotfix release?"
+        required: false
+        default: "false"
 
 permissions:
   pull-requests: write
@@ -31,7 +32,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 18.x
-          cache: 'pnpm'
+          cache: "pnpm"
       - name: Install Dependencies
         run: pnpm i
       - name: Create Release Pull Request
@@ -42,3 +43,20 @@ jobs:
           createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: create-pr
+      - name: Set PR Target Branch
+        run: |
+          if [[ "${{ github.event.inputs.hotfix }}" == "true" ]]; then
+            echo "::set-output name=target_branch::hotfix_release_branch"
+          else
+            echo "::set-output name=target_branch::main"
+          fi
+        id: set-target-branch
+      - name: Update PR target branch
+        run: |
+          pr_url=$(jq -r '.pullRequest.url' <${{ steps.create-pr.outputs.outputFile }})
+          pr_number=$(jq -r '.pullRequest.number' <${{ steps.create-pr.outputs.outputFile }})
+          curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -X PATCH \
+            -d "{\"base\":\"${{ steps.set-target-branch.outputs.target_branch }}\"}" \
+            https://api.github.com/repos/${{ github.repository }}/pulls/$pr_number
