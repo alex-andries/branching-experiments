@@ -58,9 +58,9 @@ jobs:
         id: set-target-branch
       - name: Update PR target branch
         run: |
-          pr_url=$(jq -r '.pullRequest.url' <${{ steps.create-pr.outputs.outputFile }})
-          pr_number=$(jq -r '.pullRequest.number' <${{ steps.create-pr.outputs.outputFile }})
+          pr_url=$(echo '${{ steps.create-pr.outputs.outputFile }}' | jq -r '.pullRequest.url')
+          pr_number=$(echo '${{ steps.create-pr.outputs.outputFile }}' | jq -r '.pullRequest.number')
           curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -X PATCH \
             -d "{\"base\":\"${{ steps.set-target-branch.outputs.target_branch }}\"}" \
-            https://api.github.com/repos/${{ github.repository }}/pulls/$pr_number
+            "https://api.github.com/repos/${{ github.repository }}/pulls/git$pr_number"
