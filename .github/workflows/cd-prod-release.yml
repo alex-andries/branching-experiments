@@ -45,30 +45,35 @@ jobs:
       - name: Install Dependencies
         run: pnpm i
 
+      - name: Create Changeset Release Branch
+        run: |
+          branch_name="changeset-release/${{ github.head_ref }}"
+          git checkout -b "$branch_name"
+          pnpm run release:version
+          git add .
+          git commit -m "Version Packages"
+          git push origin HEAD:$branch_name --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: create-changeset-branch
+
       - name: Create Release Pull Request
-        uses: changesets/action@v1
+        uses: peter-evans/create-pull-request@v4
         with:
-          version: npm run release:version
-          publish: npm run release:tag
-          createGithubReleases: false
+          commit-message: "Release"
+          branch: changeset-release/${{ github.head_ref }}
+          title: "Release"
+          body: "This is the automated release pull request."
+          base: ${{ github.event.inputs.hotfix == 'true' && 'hotfix_release_branch' || 'main' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         id: create-pr
 
-      - name: Set PR Target Branch
-        run: |
-          if [[ "${{ github.event.inputs.hotfix }}" == "true" ]]; then
-            echo "::set-output name=target_branch::hotfix_release_branch"
-          else
-            echo "::set-output name=target_branch::main"
-          fi
-        id: set-target-branch
-
       - name: Update PR Target Branch for Hotfix
         if: ${{ github.event.inputs.hotfix == 'true' }}
         run: |
-          pr_number=$(echo '${{ steps.create-pr.outputs.outputFile }}' | jq -r '.pullRequest.number')
+          pr_number=${{ steps.create-pr.outputs.pull-request-number }}
           curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -X PATCH \
-            -d "{\"base\":\"${{ steps.set-target-branch.outputs.target_branch }}\"}" \
+            -d "{\"base\":\"hotfix_release_branch\"}" \
             "https://api.github.com/repos/${{ github.repository }}/pulls/$pr_number"
