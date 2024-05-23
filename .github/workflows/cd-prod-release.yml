@@ -53,15 +53,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create Release Branch
-        if: ${{ github.event.inputs.hotfix == 'true' }}
-        id: create-branch
-        run: |
-          branch_name="hotfix_release_branch"
-          git checkout -b $branch_name
-          git push origin $branch_name
-          echo "::set-output name=branch_name::$branch_name"
-
       - name: Bump Version, Tag Release, and Create Pull Request
         if: ${{ github.event.inputs.hotfix == 'true' }}
         run: |
