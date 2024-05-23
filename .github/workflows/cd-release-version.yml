@@ -27,7 +27,7 @@ jobs:
           export RELEASE_VERSION=$(cat package.json | grep '"version":' | tr -d '"' | tr -d 'version: ' | tr -d ',')
           echo $RELEASE_VERSION
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
-          echo "::set-output name=RELEASE_VERSION::$RELEASE_VERSION"  # Re-added this line
+          echo "::set-output name=RELEASE_VERSION::$RELEASE_VERSION"
       - name: Create Tag
         run: |
           git tag v${{ env.RELEASE_VERSION }}
@@ -59,13 +59,11 @@ jobs:
           done
           echo -e $CONTENTS
 
-      # Delete Existing hotfix_release_branch
       - name: Delete Existing hotfix_release_branch
         if: ${{ github.event.pull_request.base.ref == 'main' && startsWith(github.event.pull_request.head.ref, 'changeset-release/') }}
         run: |
           git push origin --delete hotfix_release_branch || true
 
-      # Create hotfix_release_branch from Latest Tag
       - name: Create hotfix_release_branch from Latest Tag
         if: ${{ github.event.pull_request.base.ref == 'main' && startsWith(github.event.pull_request.head.ref, 'changeset-release/') }}
         run: |
@@ -76,12 +74,33 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Protect hotfix_release_branch
       - name: Protect hotfix_release_branch
         if: ${{ github.event.pull_request.base.ref == 'main' && startsWith(github.event.pull_request.head.ref, 'changeset-release/') }}
         run: |
           curl -X PUT -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.luke-cage-preview+json" \
             https://api.github.com/repos/${{ github.repository }}/branches/hotfix_release_branch/protection \
             -d '{"required_status_checks":{"strict":true,"contexts":[]},"enforce_admins":true,"required_pull_request_reviews":{"dismiss_stale_reviews":true},"restrictions":null}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Open PR from Latest Tag to Main
+        if: ${{ github.event.pull_request.base.ref == 'hotfix_release_branch' && startsWith(github.event.pull_request.head.ref, 'hotfix/') }}
+        run: |
+          git fetch origin --tags
+          LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+          git checkout $LATEST_TAG
+          git checkout -b hotfix-to-main
+          git push origin hotfix-to-main --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Pull Request to Main
+        if: ${{ github.event.pull_request.base.ref == 'hotfix_release_branch' && startsWith(github.event.pull_request.head.ref, 'hotfix/') }}
+        uses: peter-evans/create-pull-request@v3
+        with:
+          base: main
+          branch: hotfix-to-main
+          title: "Merge hotfix changes to main"
+          body: "This PR merges hotfix changes from the latest tag to the main branch."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
