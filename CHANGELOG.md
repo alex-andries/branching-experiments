@@ -1,5 +1,11 @@
 Buggy feature 1
 
+## 1.11.0
+
+### Minor Changes
+
+- fd64b08: Feature F1
+
 ## 1.10.0
 
 ### Minor Changes
