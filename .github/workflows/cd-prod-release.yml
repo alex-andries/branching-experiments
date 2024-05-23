@@ -19,8 +19,6 @@ permissions:
   contents: write
   actions: write
 
-concurrency: ${{ github.workflow }}-${{ github.ref }}
-
 jobs:
   release:
     name: Release
@@ -61,9 +59,9 @@ jobs:
         id: set-target-branch
         run: |
           if [[ "${{ github.event.inputs.hotfix }}" == "true" ]]; then
-            echo "::set-output name=target_branch::hotfix_release_branch"
+            echo "hotfix_release_branch" > target_branch.txt
           else
-            echo "::set-output name=target_branch::main"
+            echo "main" > target_branch.txt
           fi
 
       - name: Create Release Pull Request
