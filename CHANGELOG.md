@@ -1,5 +1,11 @@
 Buggy feature 1
 
+## 1.12.0
+
+### Minor Changes
+
+- 97e3152: Feature F2
+
 ## 1.11.0
 
 ### Minor Changes
