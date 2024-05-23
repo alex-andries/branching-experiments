@@ -53,16 +53,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Only run if hotfix flag is true
+        # Only run if hotfix flag is true
       - name: Bump Version, Tag Release, and Create Pull Request
         if: ${{ github.event.inputs.hotfix == 'true' }}
         run: |
           npm run release:version
           npm run release:tag
 
-          branch_name="hotfix_release_branch"
-          echo "Creating Pull Request to $branch_name..."
-          echo "::set-output name=branch_name::$branch_name"
+          echo "Creating Pull Request to hotfix_release_branch..."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -72,8 +70,8 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           base: hotfix_release_branch
-          branch: ${{ steps.create-branch.outputs.branch_name }}
-          title: "Merge changes from ${{ steps.create-branch.outputs.branch_name }}"
+          branch: ${{ github.ref }}
+          title: "Merge changes from ${{ github.ref }}"
           labels: "release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
