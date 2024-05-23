@@ -72,6 +72,6 @@ jobs:
           base: hotfix_release_branch
           branch: ${{ github.ref }}
           title: "Merge changes from ${{ github.ref }}"
-          labels: "release"
+          labels: "Hotfix release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

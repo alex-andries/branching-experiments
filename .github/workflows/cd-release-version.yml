@@ -2,9 +2,6 @@ name: RELEASE PROD VERSION
 
 on:
   pull_request:
-    branches:
-      - main
-      - release
     types:
       - closed
 
@@ -14,7 +11,7 @@ permissions:
 
 jobs:
   fetch-version:
-    if: ${{ (github.event.pull_request.merged == true) && (startsWith(github.head_ref, 'changeset-release/')) }}
+    if: ${{ github.event.pull_request.merged == true && ((startsWith(github.event.pull_request.head.ref, 'changeset-release/') && github.event.pull_request.base.ref == 'main') || (startsWith(github.event.pull_request.head.ref, 'hotfix/') && github.event.pull_request.base.ref == 'hotfix_release_branch')) }}
     name: Fetch Version
     runs-on: ubuntu-latest
     outputs:
@@ -30,6 +27,7 @@ jobs:
           export RELEASE_VERSION=$(cat package.json | grep '"version":' | tr -d '"' | tr -d 'version: ' | tr -d ',')
           echo $RELEASE_VERSION
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
+          echo "::set-output name=RELEASE_VERSION::$RELEASE_VERSION"
       - name: Create Tag
         run: |
           git tag v${{ env.RELEASE_VERSION }}
@@ -38,32 +36,25 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: "v${{ env.RELEASE_VERSION }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   prod-cd:
     name: PROD
     runs-on: ubuntu-latest
     needs: fetch-version
-    if: ${{ (github.event.pull_request.merged == true) && (startsWith(github.head_ref, 'changeset-release/')) }}
+    if: ${{ github.event.pull_request.merged == true && ((startsWith(github.event.pull_request.head.ref, 'changeset-release/') && github.event.pull_request.base.ref == 'main') || (startsWith(github.event.pull_request.head.ref, 'hotfix/') && github.event.pull_request.base.ref == 'hotfix_release_branch')) }}
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
       - name: Simulate CD
         run: |
           echo "Starting deployment to production..."
-          echo "Deploying version $RELEASE_VERSION to production..."
-      - name: Check if Hotfix
-        run: |
-          if [[ "${{ github.event.pull_request.base.ref }}" == "release" ]]; then
-            echo "::set-output name=hotfix::true"
-          else
-            echo "::set-output name=hotfix::false"
-          fi
-        id: check-hotfix
-      - name: Create PR from release to main
-        if: ${{ steps.check-hotfix.outputs.hotfix == 'true' }}
-        uses: peter-evans/create-pull-request@v6
-        with:
-          branch: main
-          title: "Hotfix: Merge release branch into main"
-          body: "This PR merges the hotfix from the release branch into the main branch."
-          commit-message: "Hotfix: Merge release branch into main"
-          labels: hotfix
-          delete-branch: false
+          echo "Deploying version ${{ needs.fetch-version.outputs.RELEASE_VERSION }} to production..."
+          CONTENTS=""
+          for markdown in src/*.md; do
+            CONTENTS="$CONTENTS\n$(cat $markdown)"
+          done
+          echo -e $CONTENTS
