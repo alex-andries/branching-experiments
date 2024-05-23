@@ -1,5 +1,11 @@
 Buggy feature 1
 
+## 1.9.0
+
+### Minor Changes
+
+- 2d6c462: s
+
 ## 1.8.0
 
 ### Minor Changes
