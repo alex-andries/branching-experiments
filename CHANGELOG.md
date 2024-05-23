@@ -1,5 +1,11 @@
 Buggy feature 1
 
+## 1.5.0
+
+### Minor Changes
+
+- 38d9e27: Feature F5
+
 ## 1.4.0
 
 ### Minor Changes
