@@ -1,5 +1,13 @@
 Buggy feature 1
 
+## 1.6.0
+
+### Minor Changes
+
+- cb5129c: Sixth feature
+- f873a23: Awesome broken feature
+- a2c7d36: Feature NO 7
+
 ## 1.5.0
 
 ### Minor Changes
