@@ -1,5 +1,11 @@
 Buggy feature 1
 
+## 1.7.0
+
+### Minor Changes
+
+- d91d8a7: Some cool feature
+
 ## 1.6.0
 
 ### Minor Changes
