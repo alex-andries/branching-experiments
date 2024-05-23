@@ -16,6 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       RELEASE_VERSION: ${{ steps.get.outputs.RELEASE_VERSION }}
+      RELEASE_TAG: ${{ steps.create_tag.outputs.RELEASE_TAG }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,13 +30,17 @@ jobs:
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
           echo "::set-output name=RELEASE_VERSION::$RELEASE_VERSION"
       - name: Create Tag
+        id: create_tag
         run: |
-          git tag v${{ env.RELEASE_VERSION }}
-          git push origin --tags
+          TAG_NAME="v${{ env.RELEASE_VERSION }}"
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
+          echo "RELEASE_TAG=$TAG_NAME" >> $GITHUB_ENV
+          echo "::set-output name=RELEASE_TAG::$TAG_NAME"
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "v${{ env.RELEASE_VERSION }}"
+          tag_name: "RC-${{ steps.create_tag.outputs.RELEASE_TAG }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -86,34 +91,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Delete Existing hotfix-to-main Branch
-      - name: Delete Existing hotfix-to-main Branch
-        if: ${{ github.event.pull_request.base.ref == 'hotfix_release_branch' && startsWith(github.event.pull_request.head.ref, 'hotfix/') }}
-        run: |
-          git push origin --delete hotfix-to-main || true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       # Create hotfix-to-main Branch from Latest Tag
       - name: Create hotfix-to-main Branch from Latest Tag
         if: ${{ github.event.pull_request.base.ref == 'hotfix_release_branch' && startsWith(github.event.pull_request.head.ref, 'hotfix/') }}
         run: |
           git fetch origin --tags
-          LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
-          git checkout $LATEST_TAG
-          git checkout -b hotfix-to-main
+          git checkout -b hotfix-to-main ${{ needs.fetch-version.outputs.RELEASE_TAG }}
           git push origin hotfix-to-main --force
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # Create Pull Request to Main
-      - name: Create Pull Request to Main
+      # Create Pull Request to Main from hotfix-to-main
+      - name: Create Pull Request to Main from hotfix-to-main
         if: ${{ github.event.pull_request.base.ref == 'hotfix_release_branch' && startsWith(github.event.pull_request.head.ref, 'hotfix/') }}
         uses: peter-evans/create-pull-request@v3
         with:
           base: main
           branch: hotfix-to-main
-          title: "Merge hotfix changes to main"
-          body: "This PR merges hotfix changes from the latest tag to the main branch."
+          title: "Merge Hotfix changes to Main"
+          body: "This PR merges the hotfix changes from the hotfix_release_branch to the main branch."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
