@@ -91,6 +91,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Delete Existing hotfix-to-main Branch
+      - name: Delete Existing hotfix-to-main Branch
+        if: ${{ github.event.pull_request.base.ref == 'hotfix_release_branch' && startsWith(github.event.pull_request.head.ref, 'hotfix/') }}
+        run: |
+          git push origin --delete hotfix-to-main || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       # Create hotfix-to-main Branch from Latest Tag
       - name: Create hotfix-to-main Branch from Latest Tag
         if: ${{ github.event.pull_request.base.ref == 'hotfix_release_branch' && startsWith(github.event.pull_request.head.ref, 'hotfix/') }}
