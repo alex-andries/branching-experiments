@@ -58,3 +58,14 @@ jobs:
             CONTENTS="$CONTENTS\n$(cat $markdown)"
           done
           echo -e $CONTENTS
+
+      - name: Merge Latest Tag into hotfix_release_branch
+        if: ${{ github.event.pull_request.base.ref == 'main' && startsWith(github.event.pull_request.head.ref, 'changeset-release/') }}
+        run: |
+          git fetch origin --tags
+          LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
+          git checkout hotfix_release_branch
+          git merge $LATEST_TAG
+          git push origin hotfix_release_branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
