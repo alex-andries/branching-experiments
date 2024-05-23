@@ -28,17 +28,21 @@ jobs:
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
+
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
         with:
           version: 8
+
       - name: Setup Node.js 18.x
         uses: actions/setup-node@v4
         with:
           node-version: 18.x
           cache: "pnpm"
+
       - name: Install Dependencies
         run: pnpm i
+
       - name: Create Release Pull Request
         uses: changesets/action@v1
         with:
@@ -48,6 +52,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         id: create-pr
+
       - name: Set PR Target Branch
         run: |
           if [[ "${{ github.event.inputs.hotfix }}" == "true" ]]; then
@@ -56,11 +61,14 @@ jobs:
             echo "::set-output name=target_branch::main"
           fi
         id: set-target-branch
-      - name: Update PR target branch
+
+      - name: Update PR Source Branch for Hotfix
+        if: ${{ github.event.inputs.hotfix == 'true' }}
         run: |
           pr_url=$(echo '${{ steps.create-pr.outputs.outputFile }}' | jq -r '.pullRequest.url')
           pr_number=$(echo '${{ steps.create-pr.outputs.outputFile }}' | jq -r '.pullRequest.number')
+          hotfix_branch=${{ github.event.workflow_dispatch.inputs.branch }}
           curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -X PATCH \
-            -d "{\"base\":\"${{ steps.set-target-branch.outputs.target_branch }}\"}" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls/git$pr_number"
+            -d "{\"head\":\"${hotfix_branch}\", \"base\":\"${{ steps.set-target-branch.outputs.target_branch }}\"}" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/$pr_number"
