@@ -59,11 +59,13 @@ jobs:
           done
           echo -e $CONTENTS
 
+      # Delete Existing hotfix_release_branch
       - name: Delete Existing hotfix_release_branch
         if: ${{ github.event.pull_request.base.ref == 'main' && startsWith(github.event.pull_request.head.ref, 'changeset-release/') }}
         run: |
           git push origin --delete hotfix_release_branch || true
 
+      # Create hotfix_release_branch from Latest Tag
       - name: Create hotfix_release_branch from Latest Tag
         if: ${{ github.event.pull_request.base.ref == 'main' && startsWith(github.event.pull_request.head.ref, 'changeset-release/') }}
         run: |
@@ -74,6 +76,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Protect hotfix_release_branch
       - name: Protect hotfix_release_branch
         if: ${{ github.event.pull_request.base.ref == 'main' && startsWith(github.event.pull_request.head.ref, 'changeset-release/') }}
         run: |
@@ -83,7 +86,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create hotfix-to-main Branch
+      # Delete Existing hotfix-to-main Branch
+      - name: Delete Existing hotfix-to-main Branch
+        if: ${{ github.event.pull_request.base.ref == 'hotfix_release_branch' && startsWith(github.event.pull_request.head.ref, 'hotfix/') }}
+        run: |
+          git push origin --delete hotfix-to-main || true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Create hotfix-to-main Branch from Latest Tag
+      - name: Create hotfix-to-main Branch from Latest Tag
         if: ${{ github.event.pull_request.base.ref == 'hotfix_release_branch' && startsWith(github.event.pull_request.head.ref, 'hotfix/') }}
         run: |
           git fetch origin --tags
@@ -94,6 +106,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Create Pull Request to Main
       - name: Create Pull Request to Main
         if: ${{ github.event.pull_request.base.ref == 'hotfix_release_branch' && startsWith(github.event.pull_request.head.ref, 'hotfix/') }}
         uses: peter-evans/create-pull-request@v3
