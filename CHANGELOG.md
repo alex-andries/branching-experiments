@@ -1,5 +1,11 @@
 Buggy feature 1
 
+## 1.10.0
+
+### Minor Changes
+
+- b712ed7: Another feature
+
 ## 1.9.0
 
 ### Minor Changes
