@@ -19,6 +19,8 @@ permissions:
   contents: write
   actions: write
 
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
 jobs:
   release:
     name: Release
@@ -27,7 +29,7 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.hotfix == 'true' && github.head_ref || github.ref }}
+          ref: ${{ github.event.inputs.hotfix == 'true' && github.event.workflow_dispatch.inputs.branch || github.ref }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v3
@@ -43,50 +45,32 @@ jobs:
       - name: Install Dependencies
         run: pnpm i
 
-      - name: Create Changeset Release Branch
-        id: create-changeset-branch
-        run: |
-          branch_name="changeset-release/$(basename ${GITHUB_REF})"
-          git checkout -b "$branch_name"
-          pnpm run release:version
-          git add .
-          git commit -m "Version Packages"
-          git push origin HEAD:$branch_name --force
-          echo "::set-output name=branch_name::$branch_name"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set PR Target Branch
-        id: set-target-branch
-        run: |
-          if [[ "${{ github.event.inputs.hotfix }}" == "true" ]]; then
-            echo "hotfix_release_branch" > target_branch.txt
-          else
-            echo "main" > target_branch.txt
-          fi
-
-      - name: Debug
-        run: |
-          echo "Branch name from create-changeset-branch step: ${{ steps.create-changeset-branch.outputs.branch_name }}"
-          echo "Target branch from set-target-branch step: ${{ steps.set-target-branch.outputs.target_branch }}"
-
       - name: Create Release Pull Request
-        uses: peter-evans/create-pull-request@v6
+        uses: changesets/action@v1
         with:
-          commit-message: "Release"
-          branch: ${{ steps.create-changeset-branch.outputs.branch_name }}
-          title: "Release"
-          body: "This is the automated release pull request."
-          base: ${{ steps.set-target-branch.outputs.target_branch }}
+          version: npm run release:version
+          publish: npm run release:tag
+          createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         id: create-pr
 
-      - name: Update PR Target Branch for Hotfix
+      - name: Set PR Target Branch
+        run: |
+          if [[ "${{ github.event.inputs.hotfix }}" == "true" ]]; then
+            echo "::set-output name=target_branch::hotfix_release_branch"
+          else
+            echo "::set-output name=target_branch::main"
+          fi
+        id: set-target-branch
+
+      - name: Update PR Source Branch for Hotfix
         if: ${{ github.event.inputs.hotfix == 'true' }}
         run: |
-          pr_number=$(jq -r '.number' < "${{ steps.create-pr.outputs.pull-request-url }}")
+          pr_url=$(echo '${{ steps.create-pr.outputs.outputFile }}' | jq -r '.pullRequest.url')
+          pr_number=$(echo '${{ steps.create-pr.outputs.outputFile }}' | jq -r '.pullRequest.number')
+          hotfix_branch=${{ github.event.workflow_dispatch.inputs.branch }}
           curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -X PATCH \
-            -d "{\"base\":\"hotfix_release_branch\"}" \
+            -d "{\"head\":\"${hotfix_branch}\", \"base\":\"${{ steps.set-target-branch.outputs.target_branch }}\"}" \
             "https://api.github.com/repos/${{ github.repository }}/pulls/$pr_number"
