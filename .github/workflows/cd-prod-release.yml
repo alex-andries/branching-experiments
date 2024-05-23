@@ -63,11 +63,21 @@ jobs:
         if: ${{ github.event.inputs.hotfix == 'true' }}
         run: pnpm add -g @changesets/cli
 
-      - name: Bump Version, Tag Release, and Create Pull Request
+      - name: Bump Version and Tag Release
         if: ${{ github.event.inputs.hotfix == 'true' }}
         run: |
-          pnpm changeset version
+          # Bump the package version
+          PACKAGE_VERSION=$(pnpm changeset version)
+          echo "New package version: $PACKAGE_VERSION"
+
+          # Tag the release
           pnpm changeset tag
+
+          # Update the package.json version
+          pnpm version $PACKAGE_VERSION --no-git-tag-version --allow-same-version
+
+          # Commit the changes
+          git commit -am "Bump package version to $PACKAGE_VERSION"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
