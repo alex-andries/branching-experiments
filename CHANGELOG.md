@@ -1,5 +1,11 @@
 Buggy feature 1
 
+## 1.14.0
+
+### Minor Changes
+
+- 9f4bdc3: Feature F4
+
 ## 1.13.0
 
 ### Minor Changes
