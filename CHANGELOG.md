@@ -1,5 +1,11 @@
 Buggy feature 1
 
+## 1.3.1
+
+### Patch Changes
+
+- 24ab724: 3rd feature
+
 ## 1.3.0
 
 ### Minor Changes
