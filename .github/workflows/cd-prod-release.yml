@@ -53,6 +53,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Checkout to Current Branch
+        if: ${{ github.event.inputs.hotfix == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
         # Only run if hotfix flag is true
       - name: Bump Version, Tag Release, and Create Pull Request
         if: ${{ github.event.inputs.hotfix == 'true' }}
