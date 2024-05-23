@@ -47,8 +47,8 @@ jobs:
         if: ${{ github.event.inputs.hotfix == 'false' }}
         uses: changesets/action@v1
         with:
-          version: npm run release:version
-          publish: npm run release:tag
+          version: pnpm release:version
+          publish: pnpm release:tag
           createGithubReleases: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -59,14 +59,15 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-        # Only run if hotfix flag is true
+      - name: Install Changesets CLI
+        if: ${{ github.event.inputs.hotfix == 'true' }}
+        run: pnpm add -g @changesets/cli
+
       - name: Bump Version, Tag Release, and Create Pull Request
         if: ${{ github.event.inputs.hotfix == 'true' }}
         run: |
-          npm run release:version
-          npm run release:tag
-
-          echo "Creating Pull Request to hotfix_release_branch..."
+          pnpm changeset version
+          pnpm changeset tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
