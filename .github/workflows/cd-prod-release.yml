@@ -43,36 +43,27 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Create Release Pull Request
-        if: ${{ github.event.inputs.hotfix == 'false' }}
-        uses: changesets/action@v1
-        with:
-          version: npm run release:version
-          publish: npm run release:tag
-          createGithubReleases: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      # Only run if hotfix flag is true
       - name: Bump Version, Tag Release, and Create Pull Request
         if: ${{ github.event.inputs.hotfix == 'true' }}
         run: |
           npm run release:version
           npm run release:tag
-          branch_name="${{ steps.create-branch.outputs.branch_name }}"
-          echo "Creating Pull Request to hotfix_release_branch..."
+
+          branch_name="hotfix_release_branch"
+          echo "Creating Pull Request to $branch_name..."
           echo "::set-output name=branch_name::$branch_name"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          # Create the pull request to merge changes into hotfix_release_branch
-          HOTFIX_BRANCH: ${{ steps.create-branch.outputs.branch_name }}
+      # Only run if hotfix flag is true
       - name: Create Pull Request to hotfix_release_branch
         if: ${{ github.event.inputs.hotfix == 'true' }}
         uses: peter-evans/create-pull-request@v3
         with:
           base: hotfix_release_branch
-          branch: ${{ env.HOTFIX_BRANCH }}
-          title: "Merge changes from ${{ env.HOTFIX_BRANCH }}"
+          branch: ${{ steps.create-branch.outputs.branch_name }}
+          title: "Merge changes from ${{ steps.create-branch.outputs.branch_name }}"
           labels: "release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
