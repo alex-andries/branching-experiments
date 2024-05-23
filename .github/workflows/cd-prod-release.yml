@@ -46,7 +46,7 @@ jobs:
       - name: Create Changeset Release Branch
         run: |
           echo "github.head_ref: ${{ github.head_ref }}"
-          branch_name="changeset-release/${{ github.head_ref || github.ref }}"
+          branch_name="changeset-release/$(basename ${GITHUB_REF})"
           echo "Branch name: $branch_name"
           git checkout -b "$branch_name"
           pnpm run release:version
