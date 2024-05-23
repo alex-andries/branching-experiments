@@ -59,13 +59,26 @@ jobs:
           done
           echo -e $CONTENTS
 
-      - name: Rebase Latest Tag into hotfix_release_branch
+      - name: Delete Existing hotfix_release_branch
+        if: ${{ github.event.pull_request.base.ref == 'main' && startsWith(github.event.pull_request.head.ref, 'changeset-release/') }}
+        run: |
+          git push origin --delete hotfix_release_branch || true
+
+      - name: Create hotfix_release_branch from Latest Tag
         if: ${{ github.event.pull_request.base.ref == 'main' && startsWith(github.event.pull_request.head.ref, 'changeset-release/') }}
         run: |
           git fetch origin --tags
           LATEST_TAG=$(git describe --tags `git rev-list --tags --max-count=1`)
-          git checkout hotfix_release_branch
-          git rebase $LATEST_TAG
+          git checkout -b hotfix_release_branch $LATEST_TAG
           git push origin hotfix_release_branch --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Protect hotfix_release_branch
+        if: ${{ github.event.pull_request.base.ref == 'main' && startsWith(github.event.pull_request.head.ref, 'changeset-release/') }}
+        run: |
+          curl -X PUT -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github.luke-cage-preview+json" \
+            https://api.github.com/repos/${{ github.repository }}/branches/hotfix_release_branch/protection \
+            -d '{"required_status_checks":{"strict":true,"contexts":[]},"enforce_admins":true,"required_pull_request_reviews":{"dismiss_stale_reviews":true},"restrictions":null}'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
