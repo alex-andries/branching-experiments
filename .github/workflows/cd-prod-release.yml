@@ -43,6 +43,16 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
+      - name: Create Release Pull Request
+        if: ${{ github.event.inputs.hotfix == 'false' }}
+        uses: changesets/action@v1
+        with:
+          version: npm run release:version
+          publish: npm run release:tag
+          createGithubReleases: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       # Only run if hotfix flag is true
       - name: Bump Version, Tag Release, and Create Pull Request
         if: ${{ github.event.inputs.hotfix == 'true' }}
