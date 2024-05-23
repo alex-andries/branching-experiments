@@ -53,22 +53,21 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install Changeset CLI
-        if: ${{ github.event.inputs.hotfix == 'true' }}
-        run: pnpm add -g @changesets/cli
-
       - name: Checkout to Current Branch
         if: ${{ github.event.inputs.hotfix == 'true' }}
         uses: actions/checkout@v4
         with:
           ref: ${{ github.ref }}
 
-        # Only run if hotfix flag is true
+      - name: Install Changesets CLI
+        if: ${{ github.event.inputs.hotfix == 'true' }}
+        run: pnpm add -g @changesets/cli
+
       - name: Bump Version, Tag Release, and Create Pull Request
         if: ${{ github.event.inputs.hotfix == 'true' }}
         run: |
-          pnpm release:version
-          pnpm release:tag
+          pnpm changeset version
+          pnpm changeset tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
