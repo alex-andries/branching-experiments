@@ -1,5 +1,11 @@
 Buggy feature 1
 
+## 1.8.0
+
+### Minor Changes
+
+- bc62e73: y
+
 ## 1.7.0
 
 ### Minor Changes
