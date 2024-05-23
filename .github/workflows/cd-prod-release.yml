@@ -69,10 +69,10 @@ jobs:
           fi
 
       - name: Create Release Pull Request
-        uses: peter-evans/create-pull-request@v4
+        uses: peter-evans/create-pull-request@v6
         with:
           commit-message: "Release"
-          branch: changeset-release/${{ github.head_ref }}
+          branch: ${{ steps.create-changeset-branch.outputs.branch_name }}
           title: "Release"
           body: "This is the automated release pull request."
           base: ${{ steps.set-target-branch.outputs.target_branch }}
