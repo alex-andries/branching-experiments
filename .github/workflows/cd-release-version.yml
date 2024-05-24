@@ -103,12 +103,7 @@ jobs:
   prod-cd:
     name: PROD
     runs-on: ubuntu-latest
-    needs:
-      [
-        fetch-version,
-        manage-hotfix-release-branch,
-        manage-hotfix-to-main-branch,
-      ]
+    needs: [fetch-version]
     if: ${{ github.event.pull_request.merged == true && ((startsWith(github.event.pull_request.head.ref, 'changeset-release/') && github.event.pull_request.base.ref == 'main') || (startsWith(github.event.pull_request.head.ref, 'hotfix/') && github.event.pull_request.base.ref == 'hotfix_release_branch')) }}
     steps:
       - name: Checkout
