@@ -70,36 +70,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  manage-hotfix-to-main-branch:
-    name: Manage Hotfix to Main Branch
-    runs-on: ubuntu-latest
-    needs: fetch-version
-    if: ${{ github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'hotfix_release_branch' && startsWith(github.event.pull_request.head.ref, 'hotfix/') }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Delete Existing hotfix-to-main Branch
-        run: |
-          git push origin --delete hotfix-to-main || true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create hotfix-to-main Branch from Latest Tag
-        run: |
-          git fetch origin --tags
-          git checkout -b hotfix-to-main ${{ needs.fetch-version.outputs.RELEASE_TAG }}
-          git push origin hotfix-to-main --force
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create Pull Request to Main from hotfix-to-main
-        uses: peter-evans/create-pull-request@v3
-        with:
-          base: main
-          branch: hotfix-to-main
-          title: "Merge Hotfix changes to Main"
-          body: "This PR merges the hotfix changes from the hotfix_release_branch to the main branch."
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   prod-cd:
     name: PROD
     runs-on: ubuntu-latest
