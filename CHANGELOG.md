@@ -1,5 +1,11 @@
 Buggy feature 1
 
+## 1.16.0
+
+### Minor Changes
+
+- c6cff01: t
+
 ## 1.15.1
 
 ### Patch Changes
