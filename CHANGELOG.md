@@ -1,5 +1,11 @@
 Buggy feature 1
 
+## 1.15.1
+
+### Patch Changes
+
+- 57c3434: Worfklow updates
+
 ## 1.15.0
 
 ### Minor Changes
