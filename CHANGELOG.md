@@ -1,5 +1,11 @@
 Buggy feature 1
 
+## 1.15.0
+
+### Minor Changes
+
+- f14868b: y
+
 ## 1.14.0
 
 ### Minor Changes
