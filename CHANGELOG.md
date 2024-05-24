@@ -1,5 +1,11 @@
 Buggy feature 1
 
+## 1.17.0
+
+### Minor Changes
+
+- 93b8431: test
+
 ## 1.16.0
 
 ### Minor Changes
